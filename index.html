@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//Ddiv XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/Ddiv/xhtml1-strict.ddiv">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+  <head>
+    <title>CS 194 PROJECT 1</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href="style.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <header>
+      <h1>CS 194-26: Intro to Computer Vision and Computational Photography, Fall 2021</h1>
+      <h1>Project 1: Images of the Russian Empire - Colorizing the Prokudin-Gorskii photo collection</h1>
+      <h2>By Xinyun Cao</h2>
+
+      <div class="table-of-contents">
+        <ul>
+          <li><a href="#overiew">Overview</a></li>
+          <li>
+            <a href="#part1">Part 1: </a>
+            <ul>
+              <li><a href="#alg1">Algorithm: </a></li>
+              <li><a href="#display1">Result Display: </a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#part2">Part 2: </a>
+            <ul>
+              <li><a href="#alg2">Algorithm: </a></li>
+              <li><a href="#display2">Result Display: </a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#part3">Part 3: </a>
+            <ul>
+              <li><a href="#alg3">Algorithm: </a></li>
+              <li><a href="#display3">Result Display: </a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#part4">Part 4: </a>
+            <ul>
+              <li><a href="#alg4">Algorithm: </a></li>
+              <li><a href="#display4">Result Display: </a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#part5">Part 5: </a>
+          </li>
+        </ul>
+      </div>
+      <!-- end table of contents -->
+    </header>
+    <!-- END PAGE HEADER -->
+
+    <br class="spacer" />
+
+    <!-- START PAGE CONTENT -->
+    <div class="content">
+      <div class="part" id="overview">
+        <h2>Overview</h2>
+        <!-- Give a high-level overview of what you implemented in this project. Think about what you've built as a whole.
+              Share your thoughts on what interesting things you've learned from completing the project. -->
+        <p>In this project, we colorized pictures from the Prokudin-Gorskii photo collection. The photos are black and white, taken three at a time, and are the value for the blue, green and red channels of the same picture.</p>
+        <p>The goal of this project is to align the three photos for the three color channels, and assign them each as blue, green, and red channel to a new image to create the colored version of the original set of photos.</p>
+
+      <!-- END OVERVIEW -->
+
+      <div class="part" id="part1">
+        <h2>Part 1: Exhaustive Search</h2>
+        <h3 id="alg1">Algorithm Explanation:</h3>
+        <p>The naive approach is to search through a range of possible displacements for each channel, and find the displacement with the smallest error overall.</p>
+        <p>I chose to have a parameter <code>maxOffset</code> as the range of displacements to try between the image and the reference that we try to match it to. I then implemented the ssd(Sum of Squared Differences) algorithm to represent the error. The displacement that achieve the smallest amount of error would be the result displacement. For each set of blue, green and red channel of a picture, I try to get the best displacement of green with blue as reference, and displacement of red with blue as reference, and then shift the green and red channels before adding them three all together.</p>
+        <p>After experimenting with the variables and looking through the spec for suggestions, I determined that -15 to +15 is a reasonable number for <code>maxOffset</code>, and the ssd error works great on the provided jpg images. This method, however, is quite inefficient and only works for jpg images. It takes around 1-3 seconds to run a jpg file using this algorithm. The result and the displacements are shown below.</p>
+
+        <h3 id="display1">Result Display:</h3>
+        <p>g->b means the best displacement found when aligning green channel to blue channel. Same with r->b. The tuple value pair (x, y) is the offset on the x axis and the offset on the y axis. These representations are true for all following sections in this project.</p>
+        <div class="row">
+          <div class="column">
+            <img src="output/cathedral_ssd.jpg" alt="cathedral_ssd" style="width:100%">
+            <figcaption>Cathedral. g->b: (-1, 1); r->b: (-1, 7)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/monastery_ssd.jpg" alt="monastery_ssd" style="width:100%">
+            <figcaption>Monastery. g->b: (0, -6); r->b: (1, 9)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/tobolsk_ssd.jpg" alt="tobolsk_ssd" style="width:100%">
+            <figcaption>Tobolsk. g->b: (2, 3); r->b: (3, 6)</figcaption>
+          </div>
+        </div>
+      </div>
+      <!-- END PART 1 -->
+
+      <div class="part" id="part2">
+        <h2>Part 2: Adding Manual Cropping</h2>
+        <h3 id="alg2">Algorithm Explanation:</h3>
+        <p>The results of part 1 looks okay, but there are noticable areas with disalignments between the channels. I found that it is because of the sides of the image, which usually have dark lines of different width, that introduce such errors. I have then decided to manually crop out the sides of images.</p>
+        <p>I introduced a parameter named <code>bound</code> and cropped out each side of each image with <code>bound</code> amount of pixels. Then I run the same algorithm as part 1 on the cropped images.</p>
+        <p>After experimenting with the parameters, I decided to use 20 as the value for <code>bound</code>. The result is much better than the result of part 1. The result and the displacements are shown below, side by side with result of part 1.</p>
+
+        <h3 id="display2">Result Display:</h3>
+        <p>For each row, left is the result of part 1, and right is result after cropping. As you can see, the result of the first two, especially Monastery, is improved, while the third one is mostly the same, probably because its three pictures have pretty similar side lines that don't introduce too much error.</p>
+        <div class="row">
+          <div class="column">
+            <img src="output/cathedral_ssd.jpg" alt="cathedral_ssd" style="width:100%">
+            <figcaption>Cathedral. g->b: (-1, 1); r->b: (-1, 7)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/cathedral_ssd_manual_crop.jpg" alt="cathedral_ssd_manual_crop" style="width:100%">
+            <figcaption>Cathedral cropped. g->b: (2, 5); r->b: (3, 12)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/monastery_ssd.jpg" alt="monastery_ssd" style="width:100%">
+            <figcaption>Monastery. g->b: (0, -6); r->b: (1, 9)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/monastery_ssd_manual_crop.jpg" alt="monastery_ssd_manual_crop" style="width:100%">
+            <figcaption>Monastery cropped. g->b: (2, -3); r->b: (2, 3)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/tobolsk_ssd.jpg" alt="tobolsk_ssd" style="width:100%">
+            <figcaption>Tobolsk. g->b: (2, 3); r->b: (3, 6)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/tobolsk_ssd_manual_crop.jpg" alt="tobolsk_ssd_manual_crop" style="width:100%">
+            <figcaption>Tobolsk cropped. g->b: (3, 3); r->b: (3, 6)</figcaption>
+          </div>
+        </div>
+      </div>
+      <!-- END PART 2 -->
+
+      <div class="part" id="part3">
+        <h2>Part 3: Pyramid Algorithm</h2>
+        <h3 id="alg3">Algorithm Explanation:</h3>
+        <p>As mentioned in the description of part 1, the naive exhaustive search is too inefficient for larger files like the tif files in the examples. As suggested by the specs, we can use the pyramid algorithm to speed up the search of the best offset.</p>
+        <p>The pyramid algorithm includes scaling down the image and the reference to a lower resolution, finding the best offset for the lower resolution images. Then we scale up the image resolution, and increase the offset in the previous step by the same scale, and calculate the best displacement around that offset as the base offset.</p>
+        <p>The parameters to tweak in this algorithm include the <code>maxOffset</code> (similar to part 1) and the <code>numLayer</code> as the number of layers in the pyramid algorithm. After the search of the first round, since the scale would be 2 for each layer, we only need to search around -1 to +1 in subsequent layers because if the best offset is larger or smaller than that, we would have chose some other value in the previous layer of pyramid. After experiemnting, I found that <code>maxOffset</code> for the first leyer being 15 and <code>numLayer</code> being 5 would produce reasonable result. The elapsed time for the program is under 1 minute. As shown below</p>
+
+        <h3 id="display3">Result Display:</h3>
+        <div class="row">
+          <div class="column">
+            <img src="output/church_ssd_pyramid.jpg" alt="church_ssd_pyramid" style="width:100%">
+            <figcaption>Church. g->b: (-8, -1); r->b: (-16, 48)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/emir_ssd_pyramid.jpg" alt="emir_ssd_pyramid" style="width:100%">
+            <figcaption>Emir. g->b: (0, -4); r->b: (16, 104)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/harvesters_ssd_pyramid.jpg" alt="harvesters_ssd_pyramid" style="width:100%">
+            <figcaption>Harvesters. g->b: (-4, 112); r->b: (-1, 95)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/icon_ssd_pyramid.jpg" alt="icon_ssd_pyramid" style="width:100%">
+            <figcaption>Icon. g->b: (0, 49); r->b: (16, 80)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/lady_ssd_pyramid.jpg" alt="lady_ssd_pyramid" style="width:100%">
+            <figcaption>Lady. g->b: (-8, 48); r->b: (-17, 112)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/melons_ssd_pyramid.jpg" alt="melons_ssd_pyramid" style="width:100%">
+            <figcaption>Melons. g->b: (0, 80); r->b: (0, 176)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/onion_church_ssd_pyramid.jpg" alt="onion_church_ssd_pyramid" style="width:100%">
+            <figcaption>Onion Church. g->b: (16, 52); r->b: (4, 104)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/self_portrait_ssd_pyramid.jpg" alt="self_portrait_ssd_pyramid" style="width:100%">
+            <figcaption>Self Portrait. g->b: (-4, 48); r->b: (-8, 128)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/three_generations_ssd_pyramid.jpg" alt="three_generations_ssd_pyramid" style="width:100%">
+            <figcaption>Three Generations. g->b: (0, 48); r->b: (0, 96)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/train_ssd_pyramid.jpg" alt="train_ssd_pyramid" style="width:100%">
+            <figcaption>Train. g->b: (-8, 110); r->b: (0, 96)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/workshop_ssd_pyramid.jpg" alt="workshop_ssd_pyramid" style="width:100%">
+            <figcaption>Workshop. g->b: (-8, 48); r->b: (-16, 64)</figcaption>
+          </div>
+        </div>
+      </div>
+      <!-- END PART 3 -->
+
+      <div class="part" id="part4">
+        <h2>Part 4: Pyramid Algorithm with Manual Cropping</h2>
+        <h3 id="alg4">Algorithm Explanation:</h3>
+        <p>Similar to part 2, I manually cropped the photo to exclude the sides. This time the <code>bound</code> is changed to 200 pixels since the size of the picture is around 10 times larger. The following is the comparison of before and after the manual crop.</p>
+
+        <h3 id="display4">Result Display:</h3>
+        <div class="row">
+          <div class="column">
+            <img src="output/church_ssd_pyramid.jpg" alt="church_ssd_pyramid" style="width:100%">
+            <figcaption>Church. g->b: (-8, -1); r->b: (-16, 48)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/church_ssd_pyramid_manual_crop.jpg" alt="church_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Church cropped. g->b: (0, 16); r->b: (-3, 48)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/emir_ssd_pyramid.jpg" alt="emir_ssd_pyramid" style="width:100%">
+            <figcaption>Emir. g->b: (0, -4); r->b: (16, 104)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/Emir_ssd_pyramid_manual_crop.jpg" alt="Emir_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Emir cropped. g->b: (24, 48); r->b: (-255, 93)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/harvesters_ssd_pyramid.jpg" alt="harvesters_ssd_pyramid" style="width:100%">
+            <figcaption>Harvesters. g->b: (-4, 112); r->b: (-1, 95)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/harvesters_ssd_pyramid_manual_crop.jpg" alt="harvesters_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Harvesters cropped. g->b: (16, 56); r->b: (12, 124)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/icon_ssd_pyramid.jpg" alt="icon_ssd_pyramid" style="width:100%">
+            <figcaption>Icon. g->b: (0, 49); r->b: (16, 80)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/icon_ssd_pyramid_manual_crop.jpg" alt="icon_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Icon cropped. g->b: (16, 40); r->b: (16, 88)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/lady_ssd_pyramid.jpg" alt="lady_ssd_pyramid" style="width:100%">
+            <figcaption>Lady. g->b: (-8, 48); r->b: (-17, 112)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/lady_ssd_pyramid_manual_crop.jpg" alt="lady_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Lady cropped. g->b: (8, 32); r->b: (0, 111)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/melons_ssd_pyramid.jpg" alt="melons_ssd_pyramid" style="width:100%">
+            <figcaption>Melons. g->b: (0, 80); r->b: (0, 176)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/melons_ssd_pyramid_manual_crop.jpg" alt="melons_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Melons cropped. g->b: (0, 80); r->b: (8, 176)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/onion_church_ssd_pyramid.jpg" alt="onion_church_ssd_pyramid" style="width:100%">
+            <figcaption>Onion Church. g->b: (16, 52); r->b: (4, 104)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/onion_church_ssd_pyramid_manual_crop.jpg" alt="onion_church_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Onion Church cropped. g->b: (24, 48); r->b: (32, 108)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/self_portrait_ssd_pyramid.jpg" alt="self_portrait_ssd_pyramid" style="width:100%">
+            <figcaption>Self Portrait. g->b: (-4, 48); r->b: (-8, 128)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/self_portrait_ssd_pyramid_manual_crop.jpg" alt="self_portrait_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Self Portrait cropped. g->b: (16, 72); r->b: (32, 174)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/three_generations_ssd_pyramid.jpg" alt="three_generations_ssd_pyramid" style="width:100%">
+            <figcaption>Three Generations. g->b: (0, 48); r->b: (0, 96)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/three_generations_ssd_pyramid_manual_crop.jpg" alt="three_generations_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Three Generations cropped. g->b: (12, 48); r->b: (8, 110)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/train_ssd_pyramid.jpg" alt="train_ssd_pyramid" style="width:100%">
+            <figcaption>Train. g->b: (-8, 110); r->b: (0, 96)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/train_ssd_pyramid_manual_crop.jpg" alt="train_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Train cropped. g->b: (0, 40); r->b: (31, 87)</figcaption>
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/workshop_ssd_pyramid.jpg" alt="workshop_ssd_pyramid" style="width:100%">
+            <figcaption>Workshop. g->b: (-8, 48); r->b: (-16, 64)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/workshop_ssd_pyramid_manual_crop.jpg" alt="workshop_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Workshop cropped. g->b: (0, 48); r->b: (-16, 96)</figcaption>
+          </div>
+        </div>
+      </div>
+      <!-- END PART 4 -->
+
+      <div class="part" id="part5">
+        <h2>Part 5:Conclusion and Future steps</h2>
+        <p>As shown in the cropped photos above, the result of most of the pictures are satisfying. However, Emir, Lady and Self Portrait are still not being fully satisfying yet. For Emir and Lady, the reason might be with indoor lighting and/or color of the scene, the ssd error detecting algorithm couldn't accurately determine if the pictures are best aligned. We will need to further explore the better error algorithm for those two photos. In Self Portrait, there is a large green block at the bottom right corner, which is introducing a lot of noise. New methods can also potentially be introduced to counter this.</p>
+      </div>
+      <!-- END PART 5 -->
+    </div>
+    <!-- END CONTENT -->
+
+    <hr />
+
+    <footer>
+      <a href="#">Back to top</a>
+    </footer>
+  </body>
+
+</html>
