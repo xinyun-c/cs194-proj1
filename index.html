@@ -15,37 +15,43 @@
 
       <div class="table-of-contents">
         <ul>
-          <li><a href="#overiew">Overview</a></li>
+          <li><a href="#overview">Overview</a></li>
           <li>
-            <a href="#part1">Part 1: </a>
+            <a href="#part1">Part 1: Exhaustive Search</a>
             <ul>
               <li><a href="#alg1">Algorithm: </a></li>
               <li><a href="#display1">Result Display: </a></li>
             </ul>
           </li>
           <li>
-            <a href="#part2">Part 2: </a>
+            <a href="#part2">Part 2: Adding Manual Cropping</a>
             <ul>
               <li><a href="#alg2">Algorithm: </a></li>
               <li><a href="#display2">Result Display: </a></li>
             </ul>
           </li>
           <li>
-            <a href="#part3">Part 3: </a>
+            <a href="#part3">Part 3: Pyramid Algorithm</a>
             <ul>
               <li><a href="#alg3">Algorithm: </a></li>
               <li><a href="#display3">Result Display: </a></li>
             </ul>
           </li>
           <li>
-            <a href="#part4">Part 4: </a>
+            <a href="#part4">Part 4: Pyramid Algorithm with Manual Cropping</a>
             <ul>
               <li><a href="#alg4">Algorithm: </a></li>
               <li><a href="#display4">Result Display: </a></li>
             </ul>
           </li>
           <li>
-            <a href="#part5">Part 5: </a>
+            <a href="#part5">Part 5: Bells & Whistles - Edge Detection for Error Matrix</a>
+          </li>
+          <li>
+            <a href="#part6">Part 6: Problems and Future steps</a>
+          </li>
+          <li>
+            <a href="#part7">Part 7: Gallery</a>
           </li>
         </ul>
       </div>
@@ -305,10 +311,83 @@
       <!-- END PART 4 -->
 
       <div class="part" id="part5">
-        <h2>Part 5:Conclusion and Future steps</h2>
-        <p>As shown in the cropped photos above, the result of most of the pictures are satisfying. However, Emir, Lady and Self Portrait are still not being fully satisfying yet. For Emir and Lady, the reason might be with indoor lighting and/or color of the scene, the ssd error detecting algorithm couldn't accurately determine if the pictures are best aligned. We will need to further explore the better error algorithm for those two photos. In Self Portrait, there is a large green block at the bottom right corner, which is introducing a lot of noise. New methods can also potentially be introduced to counter this.</p>
+        <h2>Part 5: Bells & Whistles - Edge Detection for Error Matrix</h2>
+        <p>For extra credit, I tried to implement Edge Detection to create a more accurate error matrix. Specifically, the reason Emir and lady photos didn't work might be because there are areas where different channels have drastically opposite values (nearly 1 and nearly 0).</p>
+        <p>To detect the edge, I applied Gaussian blur two times to both the image and the reference, and then I subtract the result of the two gaussian blurs of the same image to get the estimated edge. I then input the edge graph of the image and the reference to the ssd function to get an error of the edge filter, and use that error as our error matrix for the image - reference pair.</p>
+        <p>As shown below, the function works, though not perfectly, on picture emir.</p>
+        <div class="row">
+          <div class="column">
+            <img src="output/emir_ssd_pyramid.jpg" alt="emir_ssd_pyramid" style="width:100%">
+            <figcaption>Emir. g->b: (0, -4); r->b: (16, 104)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/Emir_ssd_pyramid_manual_crop.jpg" alt="Emir_ssd_pyramid_manual_crop" style="width:100%">
+            <figcaption>Emir with manual crop. g->b: (24, 48); r->b: (-255, 93)</figcaption>
+          </div>
+          <div class="column">
+            <img src="output/emir_edge.jpg" alt="emir_edge" style="width:100%">
+            <figcaption>Emir with Edge Detection for error matrix. g->b: (18, 32); r->b: (30, 96)</figcaption>
+          </div>
+        </div>
       </div>
+
+
+      <div class="part" id="part6">
+        <h2>Part 6: Problems and Future steps</h2>
+        <p>As shown in the cropped photos in part 4, the result of most of the pictures are satisfying. However, Emir, Lady and Self Portrait are still not being fully satisfying yet.</p>
+    	<p>For Emir and Lady, the reason might be with indoor lighting and/or color of the scene, the ssd error detecting algorithm couldn't accurately determine if the pictures are best aligned. We will need to further explore the better error algorithm for those two photos. I tried using edge error as the matrix on emir, and though not perfectly, it kinda works. The edge error method, however, does not work on lady. Probably because the parameters should be different.</p>
+    	<p>In Self Portrait, there is a large green block at the bottom right corner, which is introducing a lot of noise. New methods like crop detection and block noise detection can also potentially be introduced to counter this.</p>
+      </div>
+
       <!-- END PART 5 -->
+
+      <div class="part" id="part7">
+        <h2>Part 7: Gallery</h2>
+        <p>I went and downloaded some photos from the Library of Congress website, and I produced some colored photos using the pyramid manual-crop algorithm. I personally really love portraits, and these are some of my favorites:</p>
+      </div>
+      <div class="row">
+          <div class="column">
+            <img src="output/boats_ssd_pyramid_manual_crop.jpg" alt="boats_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/camel_ssd_pyramid_manual_crop.jpg" alt="camel_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/factory_ssd_pyramid_manual_crop.jpg" alt="factory_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/Isfandiyar_ssd_pyramid_manual_crop.jpg" alt="Isfandiyar_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/man_ssd_pyramid_manual_crop.jpg" alt="man_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/two_men_ssd_pyramid_manual_crop.jpg" alt="two_men_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/outdoor-lady_ssd_pyramid_manual_crop.jpg" alt="outdoor-lady_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/railroad-people_ssd_pyramid_manual_crop.jpg" alt="railroad-people_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+        </div>
+        <div class="row">
+          <div class="column">
+            <img src="output/woman_ssd_pyramid_manual_crop.jpg" alt="woman_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/woman2_ssd_pyramid_manual_crop.jpg" alt="woman2_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/woman3_ssd_pyramid_manual_crop.jpg" alt="woman3_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+          <div class="column">
+            <img src="output/three_person_ssd_pyramid_manual_crop.jpg" alt="three_person_ssd_pyramid_manual_crop" style="width:100%">
+          </div>
+        </div>
+      <!-- END PART 6 -->
     </div>
     <!-- END CONTENT -->
 
